@@ -1,7 +1,7 @@
-mod config;
+mod cfg;
 
 use clap::{Parser, Subcommand, Args};
-use config::config_loader::load_config;
+use cfg::config_handler::load_config;
 
 
 #[derive(Parser)]
