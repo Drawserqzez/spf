@@ -49,7 +49,8 @@ fn main() {
         Commands::Config(cfg) => {
             let existing = load_config().expect("Error loading config");
 
-            println!("New client id: '{}' is replacing old '{}'", cfg.client_id, existing);
+            println!("New client id: '{}' is replacing old client id: '{}'", 
+                     cfg.client_id, existing.app.client_id);
         }
     }
 }
