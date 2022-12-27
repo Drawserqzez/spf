@@ -13,3 +13,4 @@ things out =)
 
 [tokio for async?](https://docs.rs/tokio/latest/tokio/)
 
+[hyper to run http server](https://docs.rs/hyper/latest/hyper/)
