@@ -3,6 +3,8 @@ mod cfg;
 use clap::{Parser, Subcommand, Args};
 use cfg::config_handler::load_config;
 
+use crate::cfg::config_handler::update_client_info;
+
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -16,11 +18,11 @@ enum Commands {
     /// Toggles playback. If song is given, it will try to play that specific song
     Play { song: Option<String> },
     /// Configures spf 
-    Config(Configure)
+    UserConfig(UserConfigure)
 }
 
-#[derive(Args)]
-struct Configure {
+#[derive(Args, Debug)]
+struct UserConfigure {
     /// Sets client id, taken from Spotify Dev Dashboard
     #[arg(long)]
     client_id: String, 
@@ -46,11 +48,19 @@ fn main() {
                 println!("Toggling playback");
             }
         },
-        Commands::Config(cfg) => {
-            let existing = load_config().expect("Error loading config");
+        Commands::UserConfig(cfg) => {
+            // TODO: Check input to see if we have new fields, else print info about config path
+            let mut domain_config:cfg::config::Config = Default::default();
 
-            println!("New client id: '{}' is replacing old client id: '{}'", 
-                     cfg.client_id, existing.app.client_id);
+            domain_config.app.client_secret = cfg.client_secret.to_owned();
+            domain_config.app.client_id = cfg.client_secret.to_owned();
+            domain_config.app.redirect_port = cfg.redirect_port;
+
+            match update_client_info(&domain_config) {
+                Ok(config) => println!("Replacing config with new: {:?}", config),
+                Err(e) => eprintln!("Error when trying to replace config: {:?}", e)
+            };
+
         }
     }
 }
