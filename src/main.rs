@@ -53,7 +53,7 @@ fn main() {
             let mut domain_config:cfg::config::Config = Default::default();
 
             domain_config.app.client_secret = cfg.client_secret.to_owned();
-            domain_config.app.client_id = cfg.client_secret.to_owned();
+            domain_config.app.client_id = cfg.client_id.to_owned();
             domain_config.app.redirect_port = cfg.redirect_port;
 
             match update_client_info(&domain_config) {
