@@ -1,9 +1,10 @@
 mod cfg;
+mod spotify;
 
 use clap::{Parser, Subcommand, Args};
-use cfg::config_handler::load_config;
 
 use crate::cfg::config_handler::update_client_info;
+use crate::spotify::authenticator::authenticate;
 
 
 #[derive(Parser)]
@@ -42,14 +43,17 @@ fn main() {
 
     match &cli.cmd {
         Commands::Play { song } => {
-            if let Some(songname) = song {
-                println!("Playing '{}'", songname);
+            if authenticate().is_err() {
+                eprintln!("User is not authenticated!");
             } else {
-                println!("Toggling playback");
+                if let Some(songname) = song {
+                    println!("Playing '{}'", songname);
+                } else {
+                    println!("Toggling playback");
+                }
             }
         },
         Commands::UserConfig(cfg) => {
-            // TODO: Check input to see if we have new fields, else print info about config path
             let mut domain_config:cfg::config::Config = Default::default();
 
             domain_config.app.client_secret = cfg.client_secret.to_owned();
