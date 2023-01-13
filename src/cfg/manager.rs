@@ -17,15 +17,21 @@ fn save_config(cfg: &App) -> Result<(), CfgError> {
 
 
 pub fn update_app_config(app_cfg: &App) -> Result<App, CfgError> {
-    let existing_config = load_config()?;
-
     save_config(&app_cfg)?;
 
     load_config()
+}
+
+pub fn get_config_path() -> Result<String, CfgError> {
+    let path = confy::get_configuration_file_path(CONFY_APP_NAME, CONFY_FILE_NAME)
+        .map_err(|_| CfgError::Find)?;
+
+    path.into_os_string().into_string().map_err(|_| CfgError::Find)
 }
 
 #[derive(Debug)]
 pub enum CfgError {
     Update,
     Load,
+    Find,
 }

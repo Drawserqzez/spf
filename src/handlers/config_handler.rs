@@ -3,14 +3,25 @@ use crate::cfg;
 use cfg::models::App;
 use cfg::manager::CfgError;
 
-pub fn update_config(new_cfg: &UserConfigure) -> Result<&str, CfgError> {
+pub fn update_config(new_cfg: &UserConfigure) -> Result<String, CfgError> {
+    let cfg_path = match cfg::manager::get_config_path().ok() {
+        Some(cfg) => cfg,
+        None => "No path found".to_string()
+    };
+
+    if new_cfg.client_id.is_none() && 
+        new_cfg.client_secret.is_none() && 
+        new_cfg.redirect_port.is_none() {
+        return Ok(format!("Printing config path: '{}'", cfg_path))
+    }
+
     let old_cfg = cfg::manager::load_config()?;
 
     let updated_cfg = get_updated_cfg(&new_cfg, &old_cfg);
 
     cfg::manager::update_app_config(&updated_cfg)?;
 
-    Ok("Your config was updated. You can find it at [path here]")
+    Ok(format!("Your config was updated. You can find it here: '{}'", cfg_path))
 }
 
 fn get_updated_cfg(new_cfg: &UserConfigure, old_cfg: &App) -> App {
