@@ -1,14 +1,16 @@
 use chrono::Utc;
 
-use crate::cfg::models::{Config, Account};
+use crate::cfg::models::App;
 
-fn is_authenticated(account: &Account) -> bool {
-    let now = Utc::now();
+// TODO: We probably wanna do this with env-variables instead?
+fn is_authenticated() -> bool {
+    //let now = Utc::now();
 
-    account.expiration_time.timestamp() > now.timestamp()
+    //account.expiration_time.timestamp() > now.timestamp()
+    false
 }
 
-fn get_config() -> Option<Config> {
+fn get_config() -> Option<App> {
     match crate::cfg::manager::load_config() {
         Ok(cfg) => Some(cfg),
         Err(_e) => None,
@@ -21,7 +23,7 @@ pub fn authenticate() -> Result<(), SpotifyError> {
         None => return Err(SpotifyError::MissingConfig)
     };
 
-    if is_authenticated(&cfg.account) {
+    if is_authenticated() {
         Ok(())
     } else {
         // TODO: See if we can refresh

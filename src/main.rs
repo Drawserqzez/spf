@@ -52,21 +52,21 @@ fn main() {
             }
         },
         Commands::Config(cfg) => {
-            let mut domain_config:cfg::models::App = Default::default();
+            let mut app_cfg:cfg::models::App = Default::default();
 
             if let Some(secret) = &cfg.client_secret {
-                domain_config.client_secret = secret.to_owned();
+                app_cfg.client_secret = secret.to_owned();
             }
 
             if let Some(id) = &cfg.client_id {
-                domain_config.client_id = id.to_owned();
+                app_cfg.client_id = id.to_owned();
             }
 
             if let Some(port) = cfg.redirect_port {
-                domain_config.redirect_port = port.to_owned();
+                app_cfg.redirect_port = port.to_owned();
             }
 
-            match config_handler::update_config(&domain_config) {
+            match config_handler::update_config(&app_cfg) {
                 Ok(msg) => println!("{}", msg),
                 Err(e) => eprintln!("Error when trying to replace config: {:?}", e)
             };
