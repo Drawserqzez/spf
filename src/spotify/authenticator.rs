@@ -1,6 +1,6 @@
-use chrono::{DateTime, Utc};
+use chrono::Utc;
 
-use crate::cfg::config::Account;
+use crate::cfg::models::{Config, Account};
 
 fn is_authenticated(account: &Account) -> bool {
     let now = Utc::now();
@@ -8,19 +8,20 @@ fn is_authenticated(account: &Account) -> bool {
     account.expiration_time.timestamp() > now.timestamp()
 }
 
-fn get_config() -> Account {
-    Account {
-        account_service_url: "".to_string(),
-        access_token: "hello world".to_string(),
-        refresh_token: "it's a secret to everybody".to_string(),
-        expiration_time: DateTime::<Utc>::MIN_UTC
+fn get_config() -> Option<Config> {
+    match crate::cfg::manager::load_config() {
+        Ok(cfg) => Some(cfg),
+        Err(_e) => None,
     }
 }
 
 pub fn authenticate() -> Result<(), SpotifyError> {
-    let account = get_config();
+    let cfg = match get_config() {
+        Some(val) => val,
+        None => return Err(SpotifyError::MissingConfig)
+    };
 
-    if is_authenticated(&account) {
+    if is_authenticated(&cfg.account) {
         Ok(())
     } else {
         // TODO: See if we can refresh
@@ -29,5 +30,6 @@ pub fn authenticate() -> Result<(), SpotifyError> {
 }
 
 pub enum SpotifyError {
-    AuthError
+    AuthError,
+    MissingConfig,
 }

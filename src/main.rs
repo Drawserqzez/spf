@@ -1,10 +1,11 @@
 mod cfg;
 mod spotify;
+mod handlers;
 
 use clap::{Parser, Subcommand, Args};
 
-use crate::cfg::config_handler::update_client_info;
 use crate::spotify::authenticator::authenticate;
+use crate::handlers::config_handler;
 
 
 #[derive(Parser)]
@@ -19,24 +20,21 @@ enum Commands {
     /// Toggles playback. If song is given, it will try to play that specific song
     Play { song: Option<String> },
     /// Configures spf 
-    UserConfig(UserConfigure)
+    Config(UserConfigure)
 }
 
 #[derive(Args, Debug)]
 struct UserConfigure {
     /// Sets client id, taken from Spotify Dev Dashboard
     #[arg(long)]
-    client_id: String, 
+    client_id: Option<String>, 
     /// Sets client secret, taken from Spofity Dev Dashboard
     #[arg(long)]
-    client_secret: String,
+    client_secret: Option<String>,
     /// Sets the port that spf will listen on
-    #[arg(long, default_value_t = 1337)]
-    redirect_port: u32
+    #[arg(long)]
+    redirect_port: Option<u32>,
 }
-
-#[derive(Debug)]
-struct SpfError(String);
 
 fn main() {
     let cli = Cli::parse();
@@ -53,15 +51,23 @@ fn main() {
                 }
             }
         },
-        Commands::UserConfig(cfg) => {
-            let mut domain_config:cfg::config::Config = Default::default();
+        Commands::Config(cfg) => {
+            let mut domain_config:cfg::models::App = Default::default();
 
-            domain_config.app.client_secret = cfg.client_secret.to_owned();
-            domain_config.app.client_id = cfg.client_id.to_owned();
-            domain_config.app.redirect_port = cfg.redirect_port;
+            if let Some(secret) = &cfg.client_secret {
+                domain_config.client_secret = secret.to_owned();
+            }
 
-            match update_client_info(&domain_config) {
-                Ok(config) => println!("Replacing config with new: {:?}", config),
+            if let Some(id) = &cfg.client_id {
+                domain_config.client_id = id.to_owned();
+            }
+
+            if let Some(port) = cfg.redirect_port {
+                domain_config.redirect_port = port.to_owned();
+            }
+
+            match config_handler::update_config(&domain_config) {
+                Ok(msg) => println!("{}", msg),
                 Err(e) => eprintln!("Error when trying to replace config: {:?}", e)
             };
 
