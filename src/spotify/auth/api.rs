@@ -1,48 +1,45 @@
 use std::collections::HashMap;
 
-use reqwest::blocking::{Client, RequestBuilder};
+use reqwest::blocking::Client;
+use chrono::Utc;
 use serde::Deserialize;
 
-pub fn authenticate() -> Result<AuthResponse, AuthApiError> {
+pub fn authenticate() -> Result<Token, AuthApiError> {
     let client = Client::new();
     let mut params = HashMap::new();
 
     params.insert("grant_type", "client_credentials");
 
-    let req: RequestBuilder = client
+    let token_data: AuthResponse = client
         .post("https://accounts.spotify.com/api/token")
         .basic_auth("", Some("")) //TODO: Get client data in here
-        .form(&params);
+        .form(&params)
+        .send()
+        .unwrap() // TODO: Remove this and handle if we actually aren't auth'd
+        .json::<AuthResponse>()
+        .unwrap(); // TODO: Handle potential paring errors
 
-    let res = req.send();
+    let now = Utc::now().timestamp();
 
-    let token_data = match res {
-        Ok(response) => {  
-            println!("{:?}", response);
-            response.json::<R>() //WTF
-                .map_err(|_| AuthApiError::Unauthorized)
-        },
-        Err(e) => { eprintln!("{:?}", e); Err(AuthApiError::Unauthorized) },
-    }?;
+    let token = Token {
+        access_token: token_data.access_token,
+        expiration_time: now + token_data.expires_in,
+    };
 
-    println!("Auth response: {:?}", token_data);
-
-    Ok(AuthResponse { access_token: token_data.access_token })
+    Ok(token)
 }
 
-// TODO: Fix this _please_
 #[derive(Debug, Deserialize)]
-struct R {
+struct AuthResponse {
     access_token: String,
     token_type: String,
-    expires_in: i32
+    expires_in: i64
 }
 
 #[derive(Debug, Deserialize)]
-pub struct AuthResponse {
+pub struct Token {
     pub access_token: String,
-    //pub refresh_token: String,
-    //pub expiration_time: String,
+    pub expiration_time: i64
 }
 
 #[derive(Debug)]
