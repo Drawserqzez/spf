@@ -4,7 +4,7 @@ mod handlers;
 
 use clap::{Parser, Subcommand, Args};
 
-use crate::spotify::authenticator::authenticate;
+use crate::spotify::auth::authenticator::get_auth_token;
 use crate::handlers::config_handler;
 
 
@@ -41,7 +41,7 @@ fn main() {
 
     match &cli.cmd {
         Commands::Play { song } => {
-            if authenticate().is_err() {
+            if get_auth_token().is_err() {
                 eprintln!("User is not authenticated!");
             } else {
                 if let Some(songname) = song {
