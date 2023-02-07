@@ -1,11 +1,14 @@
 mod cfg;
 mod spotify;
 mod handlers;
+mod commands;
 
-use clap::{Parser, Subcommand, Args};
+use clap::{Parser, Subcommand};
 
 use crate::spotify::auth::authenticator::get_auth_token;
 use crate::handlers::config_handler;
+use crate::commands::user_configure::UserConfigure;
+use crate::commands::song_interaction::Song;
 
 
 #[derive(Parser)]
@@ -17,35 +20,28 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Toggles playback. If song is given, it will try to play that specific song
-    Play { song: Option<String> },
+    /// Toggles playback
+    Play(Song),
     /// Configures spf 
     Config(UserConfigure)
-}
-
-#[derive(Args, Debug)]
-pub struct UserConfigure {
-    /// Sets client id, taken from Spotify Dev Dashboard
-    #[arg(long)]
-    client_id: Option<String>, 
-    /// Sets client secret, taken from Spofity Dev Dashboard
-    #[arg(long)]
-    client_secret: Option<String>,
-    /// Sets the port that spf will listen on
-    #[arg(long)]
-    redirect_port: Option<u32>,
 }
 
 fn main() {
     let cli = Cli::parse();
 
     match &cli.cmd {
-        Commands::Play { song } => {
+        Commands::Play(song) => {
             if get_auth_token().is_err() {
                 eprintln!("User is not authenticated!");
             } else {
-                if let Some(songname) = song {
-                    println!("Playing '{}'", songname);
+                if let Some(track) = &song.title {
+                    if let Some(artist) = &song.artist {
+                        println!("Playing '{}' by '{}'", track, artist);
+                    } else {
+                        println!("Playing '{}'", track);
+                    }
+                } else if let Some(id) = &song.id {
+                    println!("Playing song with id '{}'", id);
                 } else {
                     println!("Toggling playback");
                 }
