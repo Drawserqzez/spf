@@ -4,7 +4,7 @@ use reqwest::blocking::Client;
 use chrono::Utc;
 use serde::Deserialize;
 
-pub fn authenticate() -> Result<Token, AuthApiError> {
+pub fn authenticate() -> Result<Token, reqwest::Error> {
     let client = Client::new();
     let mut params = HashMap::new();
 
@@ -14,16 +14,14 @@ pub fn authenticate() -> Result<Token, AuthApiError> {
         .post("https://accounts.spotify.com/api/token")
         .basic_auth("", Some("")) //TODO: Get client data in here
         .form(&params)
-        .send()
-        .unwrap() // TODO: Remove this and handle if we actually aren't auth'd
-        .json::<AuthResponse>()
-        .unwrap(); // TODO: Handle potential paring errors
+        .send()?
+        .json::<AuthResponse>()?; // TODO: Handle potential parsing errors
 
     let now = Utc::now().timestamp();
 
     let token = Token {
         access_token: token_data.access_token,
-        expiration_time: now + token_data.expires_in,
+        expiration_time: now + token_data.expires_in + 10,
     };
 
     Ok(token)
@@ -42,7 +40,3 @@ pub struct Token {
     pub expiration_time: i64
 }
 
-#[derive(Debug)]
-pub enum AuthApiError {
-    Unauthorized,
-}

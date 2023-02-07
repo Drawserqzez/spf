@@ -1,14 +1,10 @@
 mod cfg;
 mod spotify;
 mod handlers;
-mod commands;
 
 use clap::{Parser, Subcommand};
+use handlers::{config_handler, play_handler};
 
-use crate::spotify::auth::authenticator::get_auth_token;
-use crate::handlers::config_handler;
-use crate::commands::user_configure::UserConfigure;
-use crate::commands::song_interaction::Song;
 
 
 #[derive(Parser)]
@@ -21,9 +17,9 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     /// Toggles playback
-    Play(Song),
+    Play(play_handler::Song),
     /// Configures spf 
-    Config(UserConfigure)
+    Config(config_handler::UserConfigure)
 }
 
 fn main() {
@@ -31,26 +27,15 @@ fn main() {
 
     match &cli.cmd {
         Commands::Play(song) => {
-            if get_auth_token().is_err() {
-                eprintln!("User is not authenticated!");
-            } else {
-                if let Some(track) = &song.title {
-                    if let Some(artist) = &song.artist {
-                        println!("Playing '{}' by '{}'", track, artist);
-                    } else {
-                        println!("Playing '{}'", track);
-                    }
-                } else if let Some(id) = &song.id {
-                    println!("Playing song with id '{}'", id);
-                } else {
-                    println!("Toggling playback");
-                }
-            }
+            match play_handler::handle_play_command(&song) {
+                Ok(msg) => println!("{}", msg),
+                Err(e) => eprintln!("Error when trying to play: {:?}", e),
+            } 
         },
         Commands::Config(cfg) => {
             match config_handler::update_config(&cfg) {
                 Ok(msg) => println!("{}", msg),
-                Err(e) => eprintln!("Error when trying to update config: {:?}", e)
+                Err(e) => eprintln!("Error when trying to update config: {:?}", e),
             };
 
         }

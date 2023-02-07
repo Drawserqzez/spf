@@ -1,6 +1,9 @@
 use chrono::Utc;
 use std::env;
 use crate::spotify::auth::api::authenticate;
+use crate::spotify::error::SpotifyError;
+
+use super::api::Token;
 
 const SPF_EXPIRATION_TIME: &str = "SPF_EXPIRATION_TIME";
 const SPF_ACCESS_TOKEN: &str = "SPF_ACCESS_TOKEN";
@@ -19,19 +22,20 @@ fn is_authenticated() -> bool {
     exp_time > now.timestamp()
 }
 
-fn get_existing_token() -> Result<String, SpotifyError> {
-    env::var(SPF_ACCESS_TOKEN)
-        .map_err(|_| SpotifyError::AuthError)
+fn get_existing_token() -> Result<Token, env::VarError> {
+   let token = env::var(SPF_ACCESS_TOKEN)?;
+
+   Ok(Token { 
+       access_token: token, 
+       expiration_time: chrono::Utc::now().timestamp() + 10
+    })
 }
 
-pub fn get_auth_token() -> Result<String, SpotifyError> {
+pub fn get_auth_token() -> Result<Token, SpotifyError> {
     if is_authenticated() {
-        get_existing_token()
+        get_existing_token().map_err(|e| SpotifyError::ConfigError(format!("{:?}", e)))
     } else {
-        Ok(authenticate().unwrap().access_token)
+        authenticate().map_err(|e| SpotifyError::AuthError(format!("{:?}", e)))
     }
 }
 
-pub enum SpotifyError {
-    AuthError,
-}

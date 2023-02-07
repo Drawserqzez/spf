@@ -1,4 +1,5 @@
-use crate::UserConfigure;
+use clap::Args;
+
 use crate::cfg;
 use cfg::models::App;
 use cfg::manager::CfgError;
@@ -45,3 +46,17 @@ fn get_updated_cfg(new_cfg: &UserConfigure, old_cfg: &App) -> App {
 
     App::new(&client_id, &client_secret, port)
 }
+
+#[derive(Args, Debug)]
+pub struct UserConfigure {
+    /// Sets client id, taken from Spotify Dev Dashboard
+    #[arg(long)]
+    pub client_id: Option<String>, 
+    /// Sets client secret, taken from Spofity Dev Dashboard
+    #[arg(long)]
+    pub client_secret: Option<String>,
+    /// Sets the port that spf will listen on
+    #[arg(long)]
+    pub redirect_port: Option<u32>,
+}
+
