@@ -4,7 +4,7 @@ use serde::{Serialize, Deserialize};
 pub struct App {
     pub client_id: String,
     pub client_secret: String,
-    pub redirect_port: u32,
+    pub redirect_port: u16,
 }
 
 impl App {
@@ -16,7 +16,7 @@ impl App {
         }
     }
 
-    pub fn new(client_id: &str, client_secret: &str, redirect_port: u32) -> Self {
+    pub fn new(client_id: &str, client_secret: &str, redirect_port: u16) -> Self {
         Self {
             client_id: client_id.to_owned(),
             client_secret: client_secret.to_owned(),

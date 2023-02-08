@@ -4,7 +4,9 @@ use reqwest::blocking::Client;
 use chrono::Utc;
 use serde::Deserialize;
 
-pub fn authenticate() -> Result<Token, reqwest::Error> {
+use crate::cfg::models::App;
+
+pub fn authenticate(settings: &App) -> Result<Token, reqwest::Error> {
     let client = Client::new();
     let mut params = HashMap::new();
 
@@ -12,7 +14,7 @@ pub fn authenticate() -> Result<Token, reqwest::Error> {
 
     let token_data: AuthResponse = client
         .post("https://accounts.spotify.com/api/token")
-        .basic_auth("", Some("")) //TODO: Get client data in here
+        .basic_auth(&settings.client_id, Some(&settings.client_secret))
         .form(&params)
         .send()?
         .json::<AuthResponse>()?; // TODO: Handle potential parsing errors

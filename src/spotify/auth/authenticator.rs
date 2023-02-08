@@ -1,5 +1,6 @@
 use chrono::Utc;
 use std::env;
+use crate::cfg::manager::load_config;
 use crate::spotify::auth::api::authenticate;
 use crate::spotify::error::SpotifyError;
 
@@ -33,9 +34,11 @@ fn get_existing_token() -> Result<Token, env::VarError> {
 
 pub fn get_auth_token() -> Result<Token, SpotifyError> {
     if is_authenticated() {
-        get_existing_token().map_err(|e| SpotifyError::ConfigError(format!("{:?}", e)))
+        get_existing_token().map_err(|e| SpotifyError::EnvError(e))
     } else {
-        authenticate().map_err(|e| SpotifyError::AuthError(format!("{:?}", e)))
+        let cfg = load_config().map_err(|e| SpotifyError::ConfigError(e))?;
+
+        authenticate(&cfg).map_err(|e| SpotifyError::AuthError(e))
     }
 }
 

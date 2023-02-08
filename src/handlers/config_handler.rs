@@ -2,9 +2,8 @@ use clap::Args;
 
 use crate::cfg;
 use cfg::models::App;
-use cfg::manager::CfgError;
 
-pub fn update_config(new_cfg: &UserConfigure) -> Result<String, CfgError> {
+pub fn update_config(new_cfg: &UserConfigure) -> Result<String, confy::ConfyError> {
     let cfg_path = match cfg::manager::get_config_path().ok() {
         Some(cfg) => cfg,
         None => "No path found".to_string()
@@ -57,6 +56,6 @@ pub struct UserConfigure {
     pub client_secret: Option<String>,
     /// Sets the port that spf will listen on
     #[arg(long)]
-    pub redirect_port: Option<u32>,
+    pub redirect_port: Option<u16>,
 }
 

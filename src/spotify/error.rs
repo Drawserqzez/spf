@@ -2,9 +2,10 @@ use std::{error::Error, fmt};
 
 #[derive(Debug)]
 pub enum SpotifyError {
-    AuthError(String),
-    ConfigError(String),
-    RequestError(String),
+    AuthError(reqwest::Error),
+    ConfigError(confy::ConfyError),
+    EnvError(std::env::VarError),
+    RequestError(reqwest::Error),
 }
 
 impl fmt::Display for SpotifyError {
