@@ -11,7 +11,9 @@ pub fn authenticate(settings: &App) -> Result<Token, reqwest::Error> {
     let mut params = HashMap::new();
 
     params.insert("grant_type", "client_credentials");
+    params.insert("scope", "user-read-private user-read-email");
 
+    // TODO: We need user to authorize in browser first -> use hyper for callback
     let token_data: AuthResponse = client
         .post("https://accounts.spotify.com/api/token")
         .basic_auth(&settings.client_id, Some(&settings.client_secret))
