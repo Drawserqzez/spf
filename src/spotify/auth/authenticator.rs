@@ -28,7 +28,8 @@ fn get_existing_token() -> Result<Token, env::VarError> {
 
    Ok(Token { 
        access_token: token, 
-       expiration_time: chrono::Utc::now().timestamp() + 10
+       expiration_time: chrono::Utc::now().timestamp() + 10,
+       refresh_token: None,
     })
 }
 
